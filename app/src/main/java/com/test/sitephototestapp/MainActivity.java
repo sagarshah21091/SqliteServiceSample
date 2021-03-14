@@ -43,7 +43,9 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     TextView txtCurrentLocation, txtStartRandomEmpData, txtStartLocationData,
             txtCountEmpData, txtCountLocData, txtDeleteEmpData, txtDeleteLocData;
     private LocationHelper locationHelper;
-    private Location currentLocation;
+    //        --------- NOT REQUIRED ----------
+//    private Location currentLocation;
+    //        --------- NOT REQUIRED ----------
     DbManager dbManager;
     MyBroadcastReceiver myBroadcastReceiver = new MyBroadcastReceiver();
     @Override
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         txtCurrentLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e(TAG,"onClick txtCurrentLocation");
                 locationHelper.setLocationSettingRequest(activity, REQUEST_CHECK_SETTINGS,
                         new OnSuccessListener() {
                             @Override
@@ -82,16 +85,19 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         txtStartRandomEmpData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e(TAG,"onClick txtStartRandomEmpData");
                 dbManager.insertRandomEmpData();
             }
         });
-        txtStartLocationData.setOnClickListener(new View.OnClickListener() {
+        //        --------- NOT REQUIRED ----------
+        /*txtStartLocationData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(currentLocation!=null)
                     dbManager.insertLocationData(currentLocation);
             }
-        });
+        });*/
+        //        --------- NOT REQUIRED ----------
         txtDeleteEmpData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -113,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         txtCountEmpData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e(TAG,"onClick txtCountEmpData");
                 Intent intent = new Intent(MainActivity.this, ListActivity.class);
                 intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Employee);
                 startActivity(intent);
@@ -121,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         txtCountLocData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e(TAG,"onClick txtCountLocData");
                 Intent intent = new Intent(MainActivity.this, ListActivity.class);
                 intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Location);
                 startActivity(intent);
@@ -133,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(myBroadcastReceiver, intentFilter);
 
+        startMyService();
         checkPermission();
     }
 
@@ -206,7 +215,8 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         }
         else
         {
-            startMyService();
+//            startMyService();
+            txtCurrentLocation.performClick();
         }
     }
 
@@ -229,8 +239,9 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     private void goWithLocationPermission(int[] grantResults) {
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             //Do the stuff that requires permission...
+            txtCurrentLocation.performClick();
             locationHelper.startLocationUpdate();
-            startMyService();
+//            startMyService();
         } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest
@@ -289,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
-                        checkPermission();
+//                        checkPermission();
                         break;
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
@@ -305,15 +316,18 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
 
     @Override
     public void onLocationChanged(Location location) {
-        currentLocation = location;
-        String latlong = location.getLatitude()+","+location.getLongitude();
-        Log.e(TAG, "onLocationChanged - "+latlong);
+        //        --------- NOT REQUIRED ----------
+//        currentLocation = location;
+//        String latlong = location.getLatitude()+","+location.getLongitude();
+//        Log.e(TAG, "onLocationChanged - "+latlong);
+        //        --------- NOT REQUIRED ----------
     }
 
     @Override
     public void onConnected(Bundle bundle) {
         setRandomLocCount();
-            locationHelper.getLastLocation(this, new OnSuccessListener<Location>() {
+//        --------- NOT REQUIRED ----------
+            /*locationHelper.getLastLocation(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
                     if (location != null) {
@@ -322,7 +336,8 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                         Log.e(TAG, "getLastLocation - " + latlong);
                     }
                 }
-            });
+            });*/
+        //        --------- NOT REQUIRED ----------
         locationHelper.startLocationUpdate();
     }
 

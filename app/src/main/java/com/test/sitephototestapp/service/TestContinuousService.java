@@ -84,8 +84,8 @@ public class TestContinuousService extends Service
                 PackageManager.PERMISSION_GRANTED)
         {
                 Log.e(TAG, "Permission not granted");
-                stopForeground(true);
-                stopSelf();
+//                stopForeground(true);
+//                stopSelf();
         } else {
             locationHelper.onStart();
         }
