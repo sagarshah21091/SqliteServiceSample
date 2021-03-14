@@ -146,7 +146,7 @@ public class DbManager {
 
     public ArrayList<BinEmpData> fetchEmpData() {
         ArrayList<BinEmpData> listData = new ArrayList<>();
-        String sql = "SELECT * FROM "+dBadapterHelper.tableNameEmp+" ORDER BY "+dBadapterHelper.fieldObjectIdEmp+" DESC LIMIT 100";
+        String sql = "SELECT * FROM "+dBadapterHelper.tableNameEmp+" ORDER BY "+dBadapterHelper.fieldObjectIdEmp+" DESC"; /*LIMIT 100*/
         Cursor cursor = db.rawQuery(sql,null);
         if(cursor!=null && cursor.getCount()>0)
         {
@@ -169,7 +169,7 @@ public class DbManager {
 
     public ArrayList<BinLocationData> fetchLocData() {
         ArrayList<BinLocationData> listData = new ArrayList<>();
-        String sql = "SELECT * FROM "+dBadapterHelper.tableNameLoc+" ORDER BY "+dBadapterHelper.fieldObjectIdLoc+" DESC LIMIT 100";
+        String sql = "SELECT * FROM "+dBadapterHelper.tableNameLoc+" ORDER BY "+dBadapterHelper.fieldObjectIdLoc+" DESC"; /*LIMIT 100*/
         Cursor cursor = db.rawQuery(sql,null);
         if(cursor!=null && cursor.getCount()>0)
         {
