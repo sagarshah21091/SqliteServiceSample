@@ -12,6 +12,6 @@
     <string name="text_re_try">RETRY</string>
     <string name="start_insert_loc_data">Start\nInserting \nLocation Data</string>
     <string name="start_insert_random_data">Start\nInserting \nRandom Data</string>
-    <string name="delete_emp_data">Delete\nEmployee\nData</string>
+    <string name="delete_emp_data">Delete\nRandom\nData</string>
     <string name="delete_loc_data">Delete\nLocation\nData</string>
 </resources>

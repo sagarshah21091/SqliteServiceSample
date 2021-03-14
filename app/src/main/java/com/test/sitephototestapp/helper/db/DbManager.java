@@ -39,7 +39,7 @@ public class DbManager {
         String sql = "INSERT OR REPLACE INTO " + dBadapterHelper.tableNameEmp + " ( "+dBadapterHelper.fieldObjectNameEmp+", "+dBadapterHelper.fieldObjectEmailEmp+" ) VALUES ( ?, ? )";
         db.beginTransaction();
         SQLiteStatement stmt = db.compileStatement(sql);
-        for(int x=0; x<1; x++){
+        for(int x=0; x<20000; x++){
             int XXX = getRandomNo();
             stmt.bindString(1, "Name # " +XXX);
             stmt.bindString(2, XXX+"@"+XXX+".com");
