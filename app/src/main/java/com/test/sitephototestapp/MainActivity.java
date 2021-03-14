@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,7 +44,6 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
             txtCountEmpData, txtCountLocData, txtDeleteEmpData, txtDeleteLocData;
     private LocationHelper locationHelper;
     private Location currentLocation;
-    boolean isFirstTimeAsked;
     DbManager dbManager;
     MyBroadcastReceiver myBroadcastReceiver = new MyBroadcastReceiver();
     @Override
@@ -110,10 +110,27 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                     setRandomLocCount();
             }
         });
+        txtCountEmpData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Employee);
+                startActivity(intent);
+            }
+        });
+        txtCountLocData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Location);
+                startActivity(intent);
+            }
+        });
         setRandomEmpCount();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Utils.ACTION_INSERT_EMP_DATA);
         intentFilter.addAction(Utils.ACTION_INSERT_LOC_DATA);
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(myBroadcastReceiver, intentFilter);
 
         checkPermission();
@@ -296,11 +313,6 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     @Override
     public void onConnected(Bundle bundle) {
         setRandomLocCount();
-        /*if(!isFirstTimeAsked) {
-            isFirstTimeAsked = true;
-            txtCurrentLocation.performClick();
-        }
-        else {*/
             locationHelper.getLastLocation(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
@@ -311,7 +323,6 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                     }
                 }
             });
-//        }
         locationHelper.startLocationUpdate();
     }
 
@@ -326,14 +337,14 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     }
 
     public void setRandomEmpCount() {
-        txtCountEmpData.setText(""+dbManager.fetchRandomEmpCount());
+        txtCountEmpData.setText("("+dbManager.fetchRandomEmpCount()+")\nView\nRandom Data");
         int empId = dbManager.fetchLastEmpId();
         Log.e(TAG, "Last EmpId: "+empId);
 //        dbManager.insertRandomEmpData();
     }
 
     public void setRandomLocCount() {
-        txtCountLocData.setText(""+dbManager.fetchRandomLocCount());
+        txtCountLocData.setText("("+dbManager.fetchRandomLocCount()+")\nView\nLocation Data");
         int locId = dbManager.fetchLastLocId();
         Log.e(TAG, "Last LocId: "+locId);
 //        if(currentLocation!=null)
@@ -341,4 +352,9 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     }
 
 
+    public void onNetworkChange() {
+        String networkMessage = Utils.isInternetConnected(this)?"Internet Connected...":"Internet DisConnected...";
+        Utils.showToast(this, networkMessage);
+        Log.e(TAG, networkMessage);
+    }
 }

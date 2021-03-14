@@ -10,8 +10,11 @@ import android.util.Log;
 
 import com.test.sitephototestapp.MainActivity;
 import com.test.sitephototestapp.helper.Utils;
+import com.test.sitephototestapp.helper.model.BinEmpData;
+import com.test.sitephototestapp.helper.model.BinLocationData;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
@@ -139,6 +142,52 @@ public class DbManager {
         }
         else
             return 0;
+    }
+
+    public ArrayList<BinEmpData> fetchEmpData() {
+        ArrayList<BinEmpData> listData = new ArrayList<>();
+        String sql = "SELECT * FROM "+dBadapterHelper.tableNameEmp+" ORDER BY "+dBadapterHelper.fieldObjectIdEmp+" DESC LIMIT 100";
+        Cursor cursor = db.rawQuery(sql,null);
+        if(cursor!=null && cursor.getCount()>0)
+        {
+            cursor.moveToFirst();
+            do
+            {
+                BinEmpData binEmpData = new BinEmpData();
+                binEmpData.setId(cursor.getInt(cursor.getColumnIndex(dBadapterHelper.fieldObjectIdEmp)));
+                binEmpData.setName(cursor.getString(cursor.getColumnIndex(dBadapterHelper.fieldObjectNameEmp)));
+                binEmpData.setEmail(cursor.getString(cursor.getColumnIndex(dBadapterHelper.fieldObjectEmailEmp)));
+                listData.add(binEmpData);
+            }
+            while (cursor.moveToNext());
+            cursor.close();
+            return listData;
+        }
+        else
+            return listData;
+    }
+
+    public ArrayList<BinLocationData> fetchLocData() {
+        ArrayList<BinLocationData> listData = new ArrayList<>();
+        String sql = "SELECT * FROM "+dBadapterHelper.tableNameLoc+" ORDER BY "+dBadapterHelper.fieldObjectIdLoc+" DESC LIMIT 100";
+        Cursor cursor = db.rawQuery(sql,null);
+        if(cursor!=null && cursor.getCount()>0)
+        {
+            cursor.moveToFirst();
+            do
+            {
+                BinLocationData binLocationData = new BinLocationData();
+                binLocationData.setId(cursor.getInt(cursor.getColumnIndex(dBadapterHelper.fieldObjectIdLoc)));
+                binLocationData.setLatitude(cursor.getString(cursor.getColumnIndex(dBadapterHelper.fieldObjectLatLoc)));
+                binLocationData.setLongitude(cursor.getString(cursor.getColumnIndex(dBadapterHelper.fieldObjectLongLoc)));
+                listData.add(binLocationData);
+            }
+            while (cursor.moveToNext());
+            cursor.close();
+            return listData;
+        }
+        else
+            return listData;
     }
 
     public boolean deleteEmpData(int empId)

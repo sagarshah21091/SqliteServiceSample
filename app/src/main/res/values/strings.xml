@@ -14,4 +14,5 @@
     <string name="start_insert_random_data">Start\nInserting \nRandom Data</string>
     <string name="delete_emp_data">Delete\nRandom\nData</string>
     <string name="delete_loc_data">Delete\nLocation\nData</string>
+    <string name="text_no_item">No pending data</string>
 </resources>
