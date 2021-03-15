@@ -35,7 +35,7 @@ public class DbManager {
         return new Random().nextInt(2147483647);
     }
 
-    public void insertRandomEmpData()
+    public boolean insertRandomEmpData()
     {
         Log.e(TAG, "Start inserting data...");
         Log.e(TAG, new SimpleDateFormat("ddMMyyyy HH:mm:ss.SSS").format(new Date()));
@@ -61,6 +61,7 @@ public class DbManager {
             Log.e(TAG, "Finish inserting data...");
             Log.e(TAG, new SimpleDateFormat("ddMMyyyy HH:mm:ss.SSS").format(new Date()));
             context.sendBroadcast(new Intent(Utils.ACTION_INSERT_EMP_DATA));
+            return true;
         }
     }
 

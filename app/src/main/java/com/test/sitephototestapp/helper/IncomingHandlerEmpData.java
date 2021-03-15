@@ -12,12 +12,12 @@ import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class IncomingHandler extends Handler
+public class IncomingHandlerEmpData extends Handler
 {
     public static String CONST_DATE = "DATE";
     private final WeakReference<TestContinuousService> mService;
 
-    public IncomingHandler(TestContinuousService service) {
+    public IncomingHandlerEmpData(TestContinuousService service) {
         mService = new WeakReference<TestContinuousService>(service);
     }
 
@@ -26,9 +26,9 @@ public class IncomingHandler extends Handler
         TestContinuousService service = mService.get();
         if (service != null) {
             Bundle bundle = new Bundle();
-            bundle.putString(CONST_DATE, new SimpleDateFormat("ddMMMyy HH:mm:ss").format(new Date()));
+            bundle.putString(CONST_DATE, new SimpleDateFormat("dd-MM-yy HH:mm:ss").format(new Date()));
             msg.setData(bundle);
-            service.handleMessage(msg);
+            service.handleEmpData(msg);
         }
     }
 }

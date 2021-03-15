@@ -15,6 +15,11 @@ import com.test.sitephototestapp.MainActivity;
 import java.lang.invoke.ConstantCallSite;
 
 public class Utils {
+    public static final String ACTION_INSERT_EMP_DATA = BuildConfig.APPLICATION_ID+".ACTION_INSERT_EMP_DATA";
+    public static final String ACTION_DELETE_EMP_DATA = BuildConfig.APPLICATION_ID+".ACTION_DELETE_EMP_DATA";
+    public static final String ACTION_INSERT_LOC_DATA = BuildConfig.APPLICATION_ID+".ACTION_INSERT_LOC_DATA";
+    public static final String ACTION_DELETE_LOC_DATA = BuildConfig.APPLICATION_ID+".ACTION_DELETE_LOC_DATA";
+
     public interface constant
     {
         interface table
@@ -24,8 +29,7 @@ public class Utils {
         }
         String key_fromTable = "fromTable";
     }
-    public static final String ACTION_INSERT_EMP_DATA = BuildConfig.APPLICATION_ID+".ACTION_INSERT_EMP_DATA";
-    public static final String ACTION_INSERT_LOC_DATA = BuildConfig.APPLICATION_ID+".ACTION_INSERT_LOC_DATA";
+
     public static boolean isInternetConnected(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService
                 (Context.CONNECTIVITY_SERVICE);

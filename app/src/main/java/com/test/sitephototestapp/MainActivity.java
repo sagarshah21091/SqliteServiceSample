@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
             @Override
             public void onClick(View view) {
                 Log.e(TAG,"onClick txtCurrentLocation");
-                locationHelper.setLocationSettingRequest(activity, REQUEST_CHECK_SETTINGS,
+                /*locationHelper.setLocationSettingRequest(activity, REQUEST_CHECK_SETTINGS,
                         new OnSuccessListener() {
                             @Override
                             public void onSuccess(Object o) {
@@ -79,14 +80,15 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                             public void noFound() {
                                 Log.e(TAG,"NoGPSDeviceFoundListener");
                             }
-                        });
+                        });*/
             }
         });
         txtStartRandomEmpData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.e(TAG,"onClick txtStartRandomEmpData");
-                dbManager.insertRandomEmpData();
+                startAsyncForInsertEmpData();
+//                dbManager.insertRandomEmpData();
             }
         });
         //        --------- NOT REQUIRED ----------
@@ -103,8 +105,8 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
             public void onClick(View view) {
                 boolean isDelete = dbManager.deleteEmpData(dbManager.fetchLastEmpId());
                 Log.e(TAG, "DeleteEmpData: "+isDelete);
-                if(isDelete)
-                    setRandomEmpCount();
+//                if(isDelete)
+//                    setRandomEmpCount();
             }
         });
         txtDeleteLocData.setOnClickListener(new View.OnClickListener() {
@@ -112,26 +114,26 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
             public void onClick(View view) {
                 boolean isDelete = dbManager.deleteLocData(dbManager.fetchLastLocId());
                 Log.e(TAG, "DeleteLocData: "+isDelete);
-                if(isDelete)
-                    setRandomLocCount();
+//                if(isDelete)
+//                    setRandomLocCount();
             }
         });
         txtCountEmpData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.e(TAG,"onClick txtCountEmpData");
-                Intent intent = new Intent(MainActivity.this, ListActivity.class);
-                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Employee);
-                startActivity(intent);
+//                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+//                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Employee);
+//                startActivity(intent);
             }
         });
         txtCountLocData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.e(TAG,"onClick txtCountLocData");
-                Intent intent = new Intent(MainActivity.this, ListActivity.class);
-                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Location);
-                startActivity(intent);
+//                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+//                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Location);
+//                startActivity(intent);
             }
         });
         setRandomEmpCount();
@@ -371,5 +373,26 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         String networkMessage = Utils.isInternetConnected(this)?"Internet Connected...":"Internet DisConnected...";
         Utils.showToast(this, networkMessage);
         Log.e(TAG, networkMessage);
+    }
+
+    private void startAsyncForInsertEmpData() {
+        new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                Log.e(TAG, "Starting async to insert emp data...");
+            }
+
+            @Override
+            protected Boolean doInBackground(Void... voids) {
+                return dbManager.insertRandomEmpData();
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aVoid) {
+                super.onPostExecute(aVoid);
+                Log.e(TAG, "End async to insert emp data...");
+            }
+        }.execute();
     }
 }

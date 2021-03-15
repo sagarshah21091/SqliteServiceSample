@@ -13,7 +13,6 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.text.TextUtils;
@@ -27,7 +26,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.test.sitephototestapp.MainActivity;
 import com.test.sitephototestapp.R;
-import com.test.sitephototestapp.helper.IncomingHandler;
+import com.test.sitephototestapp.helper.IncomingHandlerLocData;
+import com.test.sitephototestapp.helper.IncomingHandlerEmpData;
 import com.test.sitephototestapp.helper.LocationHelper;
 
 import java.util.concurrent.Executors;
@@ -47,14 +47,17 @@ public class TestContinuousService extends Service
     public static final int SCHEDULED_SECONDS = 10;
     private ScheduledExecutorService scheduledExecutorService;
     private boolean isScheduledStart;
-    private IncomingHandler handler;
+    private IncomingHandlerLocData handler;
+    private IncomingHandlerEmpData handlerEmpData;
     private LocationHelper locationHelper;
     private Location currentLocation;
+    private Runnable runnableEmpData;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        handler = new IncomingHandler(this);
+        handler = new IncomingHandlerLocData(this);
+        handlerEmpData = new IncomingHandlerEmpData(this);
         initLocationHelper();
     }
 
@@ -73,6 +76,39 @@ public class TestContinuousService extends Service
         }
         startUpdateSchedule();
         checkPermission();
+        /*new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... voids) {
+                Log.e(TAG, "doInBackground");
+                try {
+                    Thread.sleep(7000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aVoid) {
+                super.onPostExecute(aVoid);
+                Log.e(TAG, "onPostExecute");
+            }
+        }.execute();*/
+        /*new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Log.e(TAG, "Separate Thread Start");
+                    Thread.sleep(7000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    Log.e(TAG, "Separate Thread Task Done");
+                }
+            }
+        }).start();*/
+
         return START_STICKY;
     }
 
@@ -112,12 +148,32 @@ public class TestContinuousService extends Service
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("RUN", "RUN");
+                    Log.e(TAG, "runnable");
                     Message message = handler.obtainMessage();
                     handler.sendMessage(message);
                 }
             };
-            scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+            runnableEmpData = new Runnable() {
+                @Override
+                public void run() {
+                    Log.e(TAG, "runnableEmpData");
+                    try {
+                        Log.e(TAG, "Separate Thread Start");
+                        Thread.sleep(7000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Thread InterruptedException");
+                    }
+                    finally {
+                        Log.e(TAG, "Separate Thread Task Done");
+                        Message message = handlerEmpData.obtainMessage();
+                        handlerEmpData.sendMessage(message);
+                    }
+                }
+            };
+            scheduledExecutorService = Executors.newScheduledThreadPool(2);
+            scheduledExecutorService.execute(runnableEmpData);
+//            scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
             scheduledExecutorService.scheduleWithFixedDelay(runnable, 0,
                     SCHEDULED_SECONDS, TimeUnit
                             .SECONDS);
@@ -247,12 +303,21 @@ public class TestContinuousService extends Service
         Log.e(TAG, "GoogleClientConnectionSuspended");
     }
 
-    public void handleMessage(Message msg) {
-        String str = msg.getData().getString(IncomingHandler.CONST_DATE);
-        Log.e("MSG", "GOT msg at "+str);
+    public void handleLocationData(Message msg) {
+        Log.e(TAG, "handleLocationData");
+        String str = msg.getData().getString(IncomingHandlerLocData.CONST_DATE);
+        Log.e(TAG, "GOT msg at "+str);
         if(currentLocation!=null) {
             String latlong = currentLocation.getLatitude() +"," + currentLocation.getLongitude();
-            Log.e(TAG, "handleMessage - " + latlong);
+            Log.e(TAG, "currentLocation - " + latlong);
         }
+    }
+
+    public void handleEmpData(Message msg) {
+        Log.e(TAG, "handleEmpData");
+        String str = msg.getData().getString(IncomingHandlerLocData.CONST_DATE);
+        Log.e("MSG", "GOT msg at "+str);
+        Log.e("MSG", "Executing queue ");
+        scheduledExecutorService.execute(runnableEmpData);
     }
 }
