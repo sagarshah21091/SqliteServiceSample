@@ -31,6 +31,8 @@ import com.test.sitephototestapp.helper.db.DbManager;
 import com.test.sitephototestapp.service.TestContinuousService;
 
 import static com.test.sitephototestapp.helper.LocationHelper.REQUEST_CHECK_SETTINGS;
+import static com.test.sitephototestapp.helper.Utils.THRESHOLD_EMP_COUNT_DISPLAY_LIMIT;
+import static com.test.sitephototestapp.helper.Utils.THRESHOLD_EMP_DATA_INSERT_MAX;
 import static com.test.sitephototestapp.service.TestContinuousService.START_FOREGROUND_ACTION;
 import static com.test.sitephototestapp.service.TestContinuousService.STOP_FOREGROUND_ACTION;
 // Wait for User to take action on fetching current location.
@@ -49,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     //        --------- NOT REQUIRED ----------
     DbManager dbManager;
     MyBroadcastReceiver myBroadcastReceiver = new MyBroadcastReceiver();
+    int COUNT_EMP_TABLE = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
             @Override
             public void onClick(View view) {
                 Log.e(TAG,"onClick txtStartRandomEmpData");
-                startAsyncForInsertEmpData();
+//                startAsyncForInsertEmpData();
 //                dbManager.insertRandomEmpData();
             }
         });
@@ -103,8 +107,8 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         txtDeleteEmpData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean isDelete = dbManager.deleteEmpData(dbManager.fetchLastEmpId());
-                Log.e(TAG, "DeleteEmpData: "+isDelete);
+//                boolean isDelete = dbManager.deleteEmpData(dbManager.fetchLastEmpId());
+                Log.e(TAG, "DeleteEmpData: ");
 //                if(isDelete)
 //                    setRandomEmpCount();
             }
@@ -112,8 +116,8 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         txtDeleteLocData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean isDelete = dbManager.deleteLocData(dbManager.fetchLastLocId());
-                Log.e(TAG, "DeleteLocData: "+isDelete);
+//                boolean isDelete = dbManager.deleteLocData(dbManager.fetchLastLocId());
+                Log.e(TAG, "DeleteLocData: ");
 //                if(isDelete)
 //                    setRandomLocCount();
             }
@@ -136,14 +140,22 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
 //                startActivity(intent);
             }
         });
-        setRandomEmpCount();
+
+
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Utils.ACTION_INSERT_EMP_DATA);
+        intentFilter.addAction(Utils.ACTION_DELETE_EMP_DATA);
         intentFilter.addAction(Utils.ACTION_INSERT_LOC_DATA);
+        intentFilter.addAction(Utils.ACTION_DELETE_LOC_DATA);
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(myBroadcastReceiver, intentFilter);
 
+        initLocationDataCount();
+
+        initEmployeeDataCount(true);
+
         startMyService();
+
         checkPermission();
     }
 
@@ -176,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer
                 .MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
+            if (service!=null && serviceClass.getName().equals(service.service.getClassName())) {
                 return true;
             }
         }
@@ -218,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         else
         {
 //            startMyService();
-            txtCurrentLocation.performClick();
+            requestLocationSettingsDialog();
         }
     }
 
@@ -241,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     private void goWithLocationPermission(int[] grantResults) {
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             //Do the stuff that requires permission...
-            txtCurrentLocation.performClick();
+            requestLocationSettingsDialog();
             locationHelper.startLocationUpdate();
 //            startMyService();
         } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
@@ -307,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
                         Log.e(TAG, "RESULT_CANCELED");
-                        txtCurrentLocation.performClick();
+                        requestLocationSettingsDialog();
                         break;
                     default:
                         break;
@@ -327,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
 
     @Override
     public void onConnected(Bundle bundle) {
-        setRandomLocCount();
+//        setLocationCount();
 //        --------- NOT REQUIRED ----------
             /*locationHelper.getLastLocation(this, new OnSuccessListener<Location>() {
                 @Override
@@ -353,46 +365,97 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         Log.e(TAG, "GoogleClientConnectionSuspended");
     }
 
-    public void setRandomEmpCount() {
-        txtCountEmpData.setText("("+dbManager.fetchRandomEmpCount()+")\nView\nRandom Data");
-        int empId = dbManager.fetchLastEmpId();
-        Log.e(TAG, "Last EmpId: "+empId);
-//        dbManager.insertRandomEmpData();
-    }
-
-    public void setRandomLocCount() {
-        txtCountLocData.setText("("+dbManager.fetchRandomLocCount()+")\nView\nLocation Data");
-        int locId = dbManager.fetchLastLocId();
-        Log.e(TAG, "Last LocId: "+locId);
-//        if(currentLocation!=null)
-//            dbManager.insertLocationData(currentLocation);
-    }
-
-
     public void onNetworkChange() {
         String networkMessage = Utils.isInternetConnected(this)?"Internet Connected...":"Internet DisConnected...";
         Utils.showToast(this, networkMessage);
         Log.e(TAG, networkMessage);
     }
 
-    private void startAsyncForInsertEmpData() {
-        new AsyncTask<Void, Void, Boolean>() {
+    private void requestLocationSettingsDialog()
+    {
+        locationHelper.setLocationSettingRequest(activity, REQUEST_CHECK_SETTINGS,
+                new OnSuccessListener() {
+                    @Override
+                    public void onSuccess(Object o) {
+                        Log.e(TAG,"OnLocationSuccessListener");
+                    }
+                }, new LocationHelper.NoGPSDeviceFoundListener() {
+                    @Override
+                    public void noFound() {
+                        Log.e(TAG,"NoGPSDeviceFoundListener");
+                    }
+                });
+    }
+
+    private void initLocationDataCount() {
+        new AsyncTask<Void, Void, Integer>() {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-                Log.e(TAG, "Starting async to insert emp data...");
+                Log.e(TAG, "Starting async to init Loc data count...");
             }
 
             @Override
-            protected Boolean doInBackground(Void... voids) {
-                return dbManager.insertRandomEmpData();
+            protected Integer doInBackground(Void... voids) {
+                return dbManager.fetchLocationCount();
             }
 
             @Override
-            protected void onPostExecute(Boolean aVoid) {
+            protected void onPostExecute(Integer aVoid) {
                 super.onPostExecute(aVoid);
-                Log.e(TAG, "End async to insert emp data...");
+                Log.e(TAG, "End async to Loc data count...");
+                txtCountLocData.setText("("+aVoid+")\nView\nLocation Data");
             }
         }.execute();
+    }
+
+    private void initEmployeeDataCount(boolean wantToAdd) {
+
+        new AsyncTask<Boolean, Void, Integer>() {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                Log.e(TAG, "Starting async to init emp data count...");
+            }
+
+            @Override
+            protected Integer doInBackground(Boolean... voids) {
+                COUNT_EMP_TABLE = dbManager.fetchEmployeeCount();
+                if(voids[0])
+                {
+                    if (COUNT_EMP_TABLE == 0) {
+                        dbManager.insertRandomEmpData(THRESHOLD_EMP_DATA_INSERT_MAX);
+                        return THRESHOLD_EMP_COUNT_DISPLAY_LIMIT;
+                    } else
+                        return COUNT_EMP_TABLE;
+                }
+                else
+                {
+                    return COUNT_EMP_TABLE;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Integer aVoid) {
+                super.onPostExecute(aVoid);
+                Log.e(TAG, "End async to emp data count...");
+                if(aVoid > THRESHOLD_EMP_COUNT_DISPLAY_LIMIT)
+                    txtCountEmpData.setText("("+aVoid+")\nView\nEmployee Data");
+            }
+        }.execute(wantToAdd);
+    }
+
+    public void setEmployeeCount() {
+//        txtCountEmpData.setText("("+dbManager.fetchEmployeeCount()+")\nView\nRandom Data");
+//        int empId = dbManager.fetchLastEmpId();
+//        Log.e(TAG, "Last EmpId: "+empId);
+        initEmployeeDataCount(false);
+    }
+
+    public void setLocationCount() {
+//        txtCountLocData.setText("("+dbManager.fetchLocationCount()+")\nView\nLocation Data");
+//        int locId = dbManager.fetchLastLocId();
+//        Log.e(TAG, "Last LocId: "+locId);
+        initLocationDataCount();
     }
 }

@@ -29,7 +29,11 @@ import com.test.sitephototestapp.R;
 import com.test.sitephototestapp.helper.IncomingHandlerLocData;
 import com.test.sitephototestapp.helper.IncomingHandlerEmpData;
 import com.test.sitephototestapp.helper.LocationHelper;
+import com.test.sitephototestapp.helper.Utils;
+import com.test.sitephototestapp.helper.db.DbManager;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,19 +49,22 @@ public class TestContinuousService extends Service
     private static final String CHANNEL_ID = "channel_01";
     public static final int FOREGROUND_NOTIFICATION_ID = 1111;
     public static final int SCHEDULED_SECONDS = 10;
+    public static final int SLEEP_SECONDS = 5 * 100;
     private ScheduledExecutorService scheduledExecutorService;
     private boolean isScheduledStart;
-    private IncomingHandlerLocData handler;
-    private IncomingHandlerEmpData handlerEmpData;
+//    private IncomingHandlerLocData handlerLocData;
+//    private IncomingHandlerEmpData handlerEmpData;
     private LocationHelper locationHelper;
     private Location currentLocation;
-    private Runnable runnableEmpData;
+    private Runnable runnableEmployee;
+    private DbManager dbManager;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        handler = new IncomingHandlerLocData(this);
-        handlerEmpData = new IncomingHandlerEmpData(this);
+        dbManager = new DbManager(this);
+//        handlerLocData = new IncomingHandlerLocData(TestContinuousService.this);
+//        handlerEmpData = new IncomingHandlerEmpData(TestContinuousService.this);
         initLocationHelper();
     }
 
@@ -145,36 +152,43 @@ public class TestContinuousService extends Service
 
         if (!isScheduledStart) {
 
-            Runnable runnable = new Runnable() {
+            Runnable runnableLocation = new Runnable() {
                 @Override
                 public void run() {
-                    Log.e(TAG, "runnable");
-                    Message message = handler.obtainMessage();
-                    handler.sendMessage(message);
+//                    Log.e(TAG, "runnableLocation");
+//                    Message message = handlerLocData.obtainMessage();
+//                    handlerLocData.sendMessage(message);
+//                    -----------------------------------
+                    handleLocationData();
                 }
             };
-            runnableEmpData = new Runnable() {
+            runnableEmployee = new Runnable() {
                 @Override
                 public void run() {
-                    Log.e(TAG, "runnableEmpData");
+//                    Log.e(TAG, "runnableEmployee");
+//                    ------ WORKS GREAT WITH THREAD.SLEEP ----
                     try {
                         Log.e(TAG, "Separate Thread Start");
-                        Thread.sleep(7000);
+                        Thread.sleep(SLEEP_SECONDS);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         Log.e(TAG, "Thread InterruptedException");
                     }
                     finally {
                         Log.e(TAG, "Separate Thread Task Done");
-                        Message message = handlerEmpData.obtainMessage();
-                        handlerEmpData.sendMessage(message);
+                        handleEmpData();
                     }
+                    /*handleEmpData();*/
+//                    ----------------(Not Useful) This Handle Msg blocks UI -----------
+//                    Message message = handlerEmpData.obtainMessage();
+//                    handlerEmpData.sendMessage(message);
+//                    ----------------------------------------------------------
                 }
             };
             scheduledExecutorService = Executors.newScheduledThreadPool(2);
-            scheduledExecutorService.execute(runnableEmpData);
+            scheduledExecutorService.execute(runnableEmployee);
 //            scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            scheduledExecutorService.scheduleWithFixedDelay(runnable, 0,
+            scheduledExecutorService.scheduleWithFixedDelay(runnableLocation, 0,
                     SCHEDULED_SECONDS, TimeUnit
                             .SECONDS);
             Log.e(TAG, "Schedule Start");
@@ -303,21 +317,48 @@ public class TestContinuousService extends Service
         Log.e(TAG, "GoogleClientConnectionSuspended");
     }
 
-    public void handleLocationData(Message msg) {
-        Log.e(TAG, "handleLocationData");
-        String str = msg.getData().getString(IncomingHandlerLocData.CONST_DATE);
-        Log.e(TAG, "GOT msg at "+str);
-        if(currentLocation!=null) {
-            String latlong = currentLocation.getLatitude() +"," + currentLocation.getLongitude();
-            Log.e(TAG, "currentLocation - " + latlong);
+    public void handleLocationData() {
+//        Log.e(TAG, "handleLocationData");
+        String now = new SimpleDateFormat("dd-MM-yy HH:mm:ss").format(new Date());
+        Log.e(TAG, "timestamp-Location "+now);
+        if(Utils.isInternetConnected(this))
+        {
+            // Get last record from Location table
+            // Data exist >> delete data one by one and update count on UI
+            // Data don't exist >> do nothing.
+            if(dbManager.deleteLocData(dbManager.fetchLastLocId())) {
+                sendBroadcast(new Intent(Utils.ACTION_DELETE_LOC_DATA));
+            }
+        }
+        else
+        {
+            if(currentLocation!=null) {
+                dbManager.insertLocationData(currentLocation);
+                String latlong = currentLocation.getLatitude() +"," + currentLocation.getLongitude();
+                Log.e(TAG, "currentLocation - " + latlong);
+            }
         }
     }
 
-    public void handleEmpData(Message msg) {
-        Log.e(TAG, "handleEmpData");
-        String str = msg.getData().getString(IncomingHandlerLocData.CONST_DATE);
-        Log.e("MSG", "GOT msg at "+str);
-        Log.e("MSG", "Executing queue ");
-        scheduledExecutorService.execute(runnableEmpData);
+    public void handleEmpData() {
+//        Log.e(TAG, "handleEmpData");
+        String now = new SimpleDateFormat("dd-MM-yy HH:mm:ss").format(new Date());
+        Log.e(TAG, "timestamp-Employee "+now);
+
+        if(Utils.isInternetConnected(this))
+        {
+            // Get last record from Employee table
+            // Data exist >> delete data one by one and update count on UI
+            // Data don't exist >> do nothing.
+            if(dbManager.deleteEmpData(dbManager.fetchLastEmpId())) {
+                sendBroadcast(new Intent(Utils.ACTION_DELETE_EMP_DATA));
+            }
+        }
+        else
+        {
+            // Insert 1 data at a time
+            dbManager.insertRandomEmpData(Utils.THRESHOLD_EMP_DATA_INSERT_DEFAULT);
+        }
+        scheduledExecutorService.execute(runnableEmployee);
     }
 }

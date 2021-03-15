@@ -30,19 +30,19 @@ public class DbManager {
         TAG = this.getClass().getSimpleName();
     }
 
-    int getRandomNo()
+    private int getRandomNo()
     {
-        return new Random().nextInt(2147483647);
+        return new Random().nextInt(Integer.MAX_VALUE);
     }
 
-    public boolean insertRandomEmpData()
+    public void insertRandomEmpData(int countOfRecords)
     {
         Log.e(TAG, "Start inserting data...");
-        Log.e(TAG, new SimpleDateFormat("ddMMyyyy HH:mm:ss.SSS").format(new Date()));
+        Log.e(TAG, new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date()));
         String sql = "INSERT OR REPLACE INTO " + dBadapterHelper.tableNameEmp + " ( "+dBadapterHelper.fieldObjectNameEmp+", "+dBadapterHelper.fieldObjectEmailEmp+" ) VALUES ( ?, ? )";
         db.beginTransaction();
         SQLiteStatement stmt = db.compileStatement(sql);
-        for(int x=0; x<20000; x++){
+        for(int x=0; x < countOfRecords; x++){
             int XXX = getRandomNo();
             stmt.bindString(1, "Name # " +XXX);
             stmt.bindString(2, XXX+"@"+XXX+".com");
@@ -51,6 +51,7 @@ public class DbManager {
         }
         try {
             db.setTransactionSuccessful();
+            context.sendBroadcast(new Intent(Utils.ACTION_INSERT_EMP_DATA));
         }
         catch (Exception e)
         {
@@ -58,17 +59,15 @@ public class DbManager {
         }
         finally {
             db.endTransaction();
+            Log.e(TAG, new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date()));
             Log.e(TAG, "Finish inserting data...");
-            Log.e(TAG, new SimpleDateFormat("ddMMyyyy HH:mm:ss.SSS").format(new Date()));
-            context.sendBroadcast(new Intent(Utils.ACTION_INSERT_EMP_DATA));
-            return true;
         }
     }
 
     public void insertLocationData(Location currentLocation)
     {
         Log.e(TAG, "Start inserting location data...");
-        Log.e(TAG, new SimpleDateFormat("ddMMyyyy HH:mm:ss.SSS").format(new Date()));
+        Log.e(TAG, new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date()));
         String sql = "INSERT OR REPLACE INTO " + dBadapterHelper.tableNameLoc + " ( "+dBadapterHelper.fieldObjectLatLoc+", "+dBadapterHelper.fieldObjectLongLoc+" ) VALUES ( ?, ? )";
         db.beginTransaction();
         SQLiteStatement stmt = db.compileStatement(sql);
@@ -78,6 +77,7 @@ public class DbManager {
         stmt.clearBindings();
         try {
             db.setTransactionSuccessful();
+            context.sendBroadcast(new Intent(Utils.ACTION_INSERT_LOC_DATA));
         }
         catch (Exception e)
         {
@@ -86,12 +86,11 @@ public class DbManager {
         finally {
             db.endTransaction();
             Log.e(TAG, "Finish inserting location data...");
-            Log.e(TAG, new SimpleDateFormat("ddMMyyyy HH:mm:ss.SSS").format(new Date()));
-            context.sendBroadcast(new Intent(Utils.ACTION_INSERT_LOC_DATA));
+            Log.e(TAG, new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(new Date()));
         }
     }
 
-    public int fetchRandomEmpCount() {
+    public int fetchEmployeeCount() {
         String[] columns = {dBadapterHelper.fieldObjectIdEmp};
         Cursor cursor = db.query(dBadapterHelper.tableNameEmp, columns, null,null,null,null,null);
         int counts = cursor.getCount();
@@ -99,7 +98,7 @@ public class DbManager {
         return counts;
     }
 
-    public int fetchRandomLocCount() {
+    public int fetchLocationCount() {
         String[] columns = {dBadapterHelper.fieldObjectIdLoc};
         Cursor cursor = db.query(dBadapterHelper.tableNameLoc, columns, null,null,null,null,null);
         int counts = cursor.getCount();

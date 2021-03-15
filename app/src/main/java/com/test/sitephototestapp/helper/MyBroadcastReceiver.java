@@ -18,13 +18,15 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             if(context instanceof MainActivity)
                 ((MainActivity) context).onNetworkChange();
         }
-        if (Utils.ACTION_INSERT_EMP_DATA.equals(action)) {
+        if (Utils.ACTION_INSERT_EMP_DATA.equals(action) ||
+                Utils.ACTION_DELETE_EMP_DATA.equals(action)) {
             if(context instanceof MainActivity)
-                ((MainActivity) context).setRandomEmpCount();
+                ((MainActivity) context).setEmployeeCount();
         }
-        else if (Utils.ACTION_INSERT_LOC_DATA.equals(action)) {
+        else if (Utils.ACTION_INSERT_LOC_DATA.equals(action) ||
+                Utils.ACTION_DELETE_LOC_DATA.equals(action)) {
             if(context instanceof MainActivity)
-                ((MainActivity) context).setRandomLocCount();
+                ((MainActivity) context).setLocationCount();
         }
     }
 }

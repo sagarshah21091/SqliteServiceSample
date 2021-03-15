@@ -28,7 +28,7 @@ public class IncomingHandlerLocData extends Handler
             Bundle bundle = new Bundle();
             bundle.putString(CONST_DATE, new SimpleDateFormat("dd-MM-yy HH:mm:ss").format(new Date()));
             msg.setData(bundle);
-            service.handleLocationData(msg);
+//            service.handleLocationData(msg);
         }
     }
 }

@@ -30,6 +30,10 @@ public class Utils {
         String key_fromTable = "fromTable";
     }
 
+    public static final int THRESHOLD_EMP_COUNT_DISPLAY_LIMIT = -1;
+    public static final int THRESHOLD_EMP_DATA_INSERT_MAX = 20000;
+    public static final int THRESHOLD_EMP_DATA_INSERT_DEFAULT = 1;
+
     public static boolean isInternetConnected(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService
                 (Context.CONNECTIVITY_SERVICE);

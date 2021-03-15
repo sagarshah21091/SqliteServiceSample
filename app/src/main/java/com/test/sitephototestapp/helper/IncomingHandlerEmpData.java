@@ -28,7 +28,7 @@ public class IncomingHandlerEmpData extends Handler
             Bundle bundle = new Bundle();
             bundle.putString(CONST_DATE, new SimpleDateFormat("dd-MM-yy HH:mm:ss").format(new Date()));
             msg.setData(bundle);
-            service.handleEmpData(msg);
+//            service.handleEmpData(msg);
         }
     }
 }
