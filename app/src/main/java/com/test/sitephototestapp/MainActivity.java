@@ -369,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     public void onNetworkChange() {
         boolean isInternetAvail = Utils.isInternetConnected(this);
         String networkMessage = isInternetAvail ? "Internet Connected...":"Internet DisConnected...";
-        Utils.showToast(this, networkMessage);
+//        Utils.showToast(this, networkMessage);
         Log.e(TAG, networkMessage);
         requestLocationSettingsDialog();
         startMyService();

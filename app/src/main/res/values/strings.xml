@@ -6,7 +6,7 @@
     <string name="text_ok">OK</string>
     <string name="text_attention">Attention</string>
     <string name="msg_reason_for_permission_location">Without this permission, app will be unable
-    to get your location and address. Are sure you want to deny this permission?
+    to get your location. Are sure you want to deny this permission?
     </string>
     <string name="text_i_am_sure">I\'M SURE</string>
     <string name="text_re_try">RETRY</string>

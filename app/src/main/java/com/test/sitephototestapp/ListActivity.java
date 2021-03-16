@@ -1,8 +1,10 @@
 package com.test.sitephototestapp;
 
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -21,12 +23,14 @@ import com.test.sitephototestapp.helper.Utils;
 import com.test.sitephototestapp.helper.db.DbManager;
 import com.test.sitephototestapp.helper.model.BinEmpData;
 import com.test.sitephototestapp.helper.model.BinLocationData;
+import com.test.sitephototestapp.service.TestContinuousService;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 import static com.test.sitephototestapp.helper.Utils.THRESHOLD_EMP_COUNT_DISPLAY_LIMIT;
 import static com.test.sitephototestapp.helper.Utils.THRESHOLD_EMP_DATA_INSERT_MAX;
+import static com.test.sitephototestapp.service.TestContinuousService.START_FOREGROUND_ACTION;
 
 
 public class ListActivity extends AppCompatActivity {
@@ -61,7 +65,7 @@ public class ListActivity extends AppCompatActivity {
                 intentFilter = Utils.getLocationActions();
                 break;
         }
-//        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(myBroadcastReceiver, intentFilter);
     }
 
@@ -339,5 +343,25 @@ public class ListActivity extends AppCompatActivity {
             }
         }.execute();
 //        =========================================
+    }
+
+    public void onNetworkChange() {
+        boolean isInternetAvail = Utils.isInternetConnected(this);
+        String networkMessage = isInternetAvail ? "Internet Connected...":"Internet DisConnected...";
+//        Utils.showToast(this, networkMessage);
+        Log.e(TAG, networkMessage);
+        startMyService();
+    }
+
+    public void startMyService() {
+//        if (!isMyServiceRunning(TestContinuousService.class)) {
+        Intent intent = new Intent(this, TestContinuousService.class);
+        intent.setAction(START_FOREGROUND_ACTION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
+//        }
     }
 }

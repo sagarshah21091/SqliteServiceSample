@@ -18,6 +18,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         {
             if(context instanceof MainActivity)
                 ((MainActivity) context).onNetworkChange();
+            else if(context instanceof ListActivity)
+                ((ListActivity) context).onNetworkChange();
         }
         if (Utils.ACTION_INSERT_EMP_DATA.equals(action)) {
             if(context instanceof MainActivity)
