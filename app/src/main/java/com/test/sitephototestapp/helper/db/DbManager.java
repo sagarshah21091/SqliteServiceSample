@@ -190,6 +190,44 @@ public class DbManager {
             return listData;
     }
 
+    public BinLocationData fetchLastLocData() {
+        BinLocationData binLocationData = new BinLocationData();
+        String sql = "SELECT * FROM "+dBadapterHelper.tableNameLoc+" ORDER BY "+dBadapterHelper.fieldObjectIdLoc+" DESC LIMIT 1";
+        Cursor cursor = db.rawQuery(sql,null);
+        if(cursor!=null && cursor.getCount()>0)
+        {
+            cursor.moveToFirst();
+            do
+            {
+                binLocationData.setId(cursor.getInt(cursor.getColumnIndex(dBadapterHelper.fieldObjectIdLoc)));
+                binLocationData.setLatitude(cursor.getString(cursor.getColumnIndex(dBadapterHelper.fieldObjectLatLoc)));
+                binLocationData.setLongitude(cursor.getString(cursor.getColumnIndex(dBadapterHelper.fieldObjectLongLoc)));
+            }
+            while (cursor.moveToNext());
+            cursor.close();
+        }
+        return binLocationData;
+    }
+
+    public BinEmpData fetchLastEmpData() {
+        BinEmpData binEmpData = new BinEmpData();
+        String sql = "SELECT * FROM "+dBadapterHelper.tableNameEmp+" ORDER BY "+dBadapterHelper.fieldObjectIdEmp+" DESC LIMIT 1";
+        Cursor cursor = db.rawQuery(sql,null);
+        if(cursor!=null && cursor.getCount()>0)
+        {
+            cursor.moveToFirst();
+            do
+            {
+                binEmpData.setId(cursor.getInt(cursor.getColumnIndex(dBadapterHelper.fieldObjectIdEmp)));
+                binEmpData.setName(cursor.getString(cursor.getColumnIndex(dBadapterHelper.fieldObjectNameEmp)));
+                binEmpData.setEmail(cursor.getString(cursor.getColumnIndex(dBadapterHelper.fieldObjectEmailEmp)));
+            }
+            while (cursor.moveToNext());
+            cursor.close();
+        }
+        return binEmpData;
+    }
+
     public boolean deleteEmpData(int empId)
     {
         String columnsSelection = dBadapterHelper.fieldObjectIdEmp+"=?";

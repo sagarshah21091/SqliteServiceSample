@@ -326,8 +326,11 @@ public class TestContinuousService extends Service
             // Get last record from Location table
             // Data exist >> delete data one by one and update count on UI
             // Data don't exist >> do nothing.
-            if(dbManager.deleteLocData(dbManager.fetchLastLocId())) {
-                sendBroadcast(new Intent(Utils.ACTION_DELETE_LOC_DATA));
+            int lastRowIdLoc = dbManager.fetchLastLocId();
+            if(dbManager.deleteLocData(lastRowIdLoc)) {
+                Intent intentLocDel = new Intent(Utils.ACTION_DELETE_LOC_DATA);
+                intentLocDel.putExtra(Utils.constant.key_last_row_id, lastRowIdLoc);
+                sendBroadcast(intentLocDel);
             }
         }
         else
@@ -350,8 +353,11 @@ public class TestContinuousService extends Service
             // Get last record from Employee table
             // Data exist >> delete data one by one and update count on UI
             // Data don't exist >> do nothing.
-            if(dbManager.deleteEmpData(dbManager.fetchLastEmpId())) {
-                sendBroadcast(new Intent(Utils.ACTION_DELETE_EMP_DATA));
+            int lastRowIdEmp = dbManager.fetchLastEmpId();
+            if(dbManager.deleteEmpData(lastRowIdEmp)) {
+                Intent intentEmpDel = new Intent(Utils.ACTION_DELETE_EMP_DATA);
+                intentEmpDel.putExtra(Utils.constant.key_last_row_id, lastRowIdEmp);
+                sendBroadcast(intentEmpDel);
             }
         }
         else

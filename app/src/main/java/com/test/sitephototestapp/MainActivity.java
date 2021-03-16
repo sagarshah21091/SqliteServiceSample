@@ -126,18 +126,18 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
             @Override
             public void onClick(View view) {
                 Log.e(TAG,"onClick txtCountEmpData");
-//                Intent intent = new Intent(MainActivity.this, ListActivity.class);
-//                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Employee);
-//                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Employee);
+                startActivity(intent);
             }
         });
         txtCountLocData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.e(TAG,"onClick txtCountLocData");
-//                Intent intent = new Intent(MainActivity.this, ListActivity.class);
-//                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Location);
-//                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+                intent.putExtra(Utils.constant.key_fromTable, Utils.constant.table.Location);
+                startActivity(intent);
             }
         });
 
