@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     }
 
     public void startMyService() {
-        if (!isMyServiceRunning(TestContinuousService.class)) {
+//        if (!isMyServiceRunning(TestContinuousService.class)) {
             Intent intent = new Intent(this, TestContinuousService.class);
             intent.setAction(START_FOREGROUND_ACTION);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
             } else {
                 startService(intent);
             }
-        }
+//        }
     }
 
     public void stopMyService() {
@@ -315,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
 //                        checkPermission();
+                        Log.e(TAG, "RESULT_OK");
                         break;
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
@@ -332,8 +333,8 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     public void onLocationChanged(Location location) {
         //        --------- NOT REQUIRED ----------
 //        currentLocation = location;
-//        String latlong = location.getLatitude()+","+location.getLongitude();
-//        Log.e(TAG, "onLocationChanged - "+latlong);
+        String latlong = location.getLatitude()+","+location.getLongitude();
+        Log.e(TAG, "onLocationChanged - "+latlong);
         //        --------- NOT REQUIRED ----------
     }
 
@@ -341,16 +342,16 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     public void onConnected(Bundle bundle) {
 //        setLocationCount();
 //        --------- NOT REQUIRED ----------
-            /*locationHelper.getLastLocation(this, new OnSuccessListener<Location>() {
+            locationHelper.getLastLocation(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
                     if (location != null) {
-                        currentLocation = location;
+//                        currentLocation = location;
                         String latlong = location.getLatitude() + "," + location.getLongitude();
                         Log.e(TAG, "getLastLocation - " + latlong);
                     }
                 }
-            });*/
+            });
         //        --------- NOT REQUIRED ----------
         locationHelper.startLocationUpdate();
     }
@@ -366,9 +367,12 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     }
 
     public void onNetworkChange() {
-        String networkMessage = Utils.isInternetConnected(this)?"Internet Connected...":"Internet DisConnected...";
+        boolean isInternetAvail = Utils.isInternetConnected(this);
+        String networkMessage = isInternetAvail ? "Internet Connected...":"Internet DisConnected...";
         Utils.showToast(this, networkMessage);
         Log.e(TAG, networkMessage);
+        requestLocationSettingsDialog();
+        startMyService();
     }
 
     private void requestLocationSettingsDialog()

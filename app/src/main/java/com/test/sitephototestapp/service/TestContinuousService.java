@@ -48,8 +48,8 @@ public class TestContinuousService extends Service
     public static final String TAG = "TestContinousService";
     private static final String CHANNEL_ID = "channel_01";
     public static final int FOREGROUND_NOTIFICATION_ID = 1111;
-    public static final int SCHEDULED_SECONDS = 10;
-    public static final int SLEEP_SECONDS = 5 * 100;
+    public static final int SCHEDULED_SECONDS = 5;
+    public static final int SLEEP_SECONDS = 1000;
     private ScheduledExecutorService scheduledExecutorService;
     private boolean isScheduledStart;
 //    private IncomingHandlerLocData handlerLocData;
@@ -168,17 +168,17 @@ public class TestContinuousService extends Service
 //                    Log.e(TAG, "runnableEmployee");
 //                    ------ WORKS GREAT WITH THREAD.SLEEP ----
                     try {
-                        Log.e(TAG, "Separate Thread Start");
+//                        Log.e(TAG, "Separate Thread Start");
                         Thread.sleep(SLEEP_SECONDS);
+                        handleEmpData();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                        Log.e(TAG, "Thread InterruptedException");
+//                        Log.e(TAG, "Thread InterruptedException");
                     }
-                    finally {
+                    /*finally {
                         Log.e(TAG, "Separate Thread Task Done");
                         handleEmpData();
-                    }
-                    /*handleEmpData();*/
+                    }*/
 //                    ----------------(Not Useful) This Handle Msg blocks UI -----------
 //                    Message message = handlerEmpData.obtainMessage();
 //                    handlerEmpData.sendMessage(message);
