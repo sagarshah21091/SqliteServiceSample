@@ -13,8 +13,11 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
+import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -46,10 +49,10 @@ public class TestContinuousService extends Service
     public static final String STOP_FOREGROUND_ACTION = "provider" +
             ".stopforeground";
     public static final String TAG = "TestContinousService";
-    private static final String CHANNEL_ID = "channel_01";
+    public static final String CHANNEL_ID = "channel_01";
     public static final int FOREGROUND_NOTIFICATION_ID = 1111;
-    public static final int SCHEDULED_SECONDS = 5;
-    public static final int SLEEP_SECONDS = 1000;
+    public static final int SCHEDULED_SECONDS = 10;
+    public static final int SLEEP_SECONDS = 2000;
     private ScheduledExecutorService scheduledExecutorService;
     private boolean isScheduledStart;
 //    private IncomingHandlerLocData handlerLocData;
@@ -159,6 +162,7 @@ public class TestContinuousService extends Service
 //                    Message message = handlerLocData.obtainMessage();
 //                    handlerLocData.sendMessage(message);
 //                    -----------------------------------
+                    removeForegroundNotification();
                     handleLocationData();
                 }
             };
@@ -366,5 +370,29 @@ public class TestContinuousService extends Service
             dbManager.insertRandomEmpData(Utils.THRESHOLD_EMP_DATA_INSERT_DEFAULT);
         }
         scheduledExecutorService.execute(runnableEmployee);
+    }
+
+    public void removeForegroundNotification()
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if(isNotificationVisible(notificationManager))
+        {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    notificationManager.deleteNotificationChannel(TestContinuousService.CHANNEL_ID);
+                }
+            },650);
+        }
+    }
+
+    private boolean isNotificationVisible(NotificationManager notificationManager) {
+        StatusBarNotification[] sbN =notificationManager.getActiveNotifications();
+        for(StatusBarNotification binNotifica : sbN)
+        {
+            if(binNotifica.getId() == TestContinuousService.FOREGROUND_NOTIFICATION_ID)
+                return true;
+        }
+        return false;
     }
 }

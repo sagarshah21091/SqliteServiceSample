@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -17,27 +20,26 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.test.sitephototestapp.helper.AppLifecycleObserver;
 import com.test.sitephototestapp.helper.CustomDialogAlert;
 import com.test.sitephototestapp.helper.LocationHelper;
 import com.test.sitephototestapp.helper.MyBroadcastReceiver;
 import com.test.sitephototestapp.helper.Utils;
 import com.test.sitephototestapp.helper.db.DbManager;
 import com.test.sitephototestapp.service.TestContinuousService;
-
 import static com.test.sitephototestapp.helper.LocationHelper.REQUEST_CHECK_SETTINGS;
 import static com.test.sitephototestapp.helper.Utils.THRESHOLD_EMP_COUNT_DISPLAY_LIMIT;
 import static com.test.sitephototestapp.helper.Utils.THRESHOLD_EMP_DATA_INSERT_MAX;
 import static com.test.sitephototestapp.service.TestContinuousService.START_FOREGROUND_ACTION;
 import static com.test.sitephototestapp.service.TestContinuousService.STOP_FOREGROUND_ACTION;
-// Wait for User to take action on fetching current location.
-// On User action ask for location permission
-// On permission granted start the service which will continuously fetch user's current lat-long
 public class MainActivity extends AppCompatActivity implements LocationHelper.OnLocationReceived {
     public String TAG;
     public static final int PERMISSION_FOR_LOCATION = 2;
@@ -69,59 +71,6 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         txtDeleteEmpData = findViewById(R.id.txtDeleteEmpData);
         txtDeleteLocData = findViewById(R.id.txtDeleteLocData);
 
-        txtCurrentLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e(TAG,"onClick txtCurrentLocation");
-                /*locationHelper.setLocationSettingRequest(activity, REQUEST_CHECK_SETTINGS,
-                        new OnSuccessListener() {
-                            @Override
-                            public void onSuccess(Object o) {
-                                Log.e(TAG,"OnLocationSuccessListener");
-                            }
-                        }, new LocationHelper.NoGPSDeviceFoundListener() {
-                            @Override
-                            public void noFound() {
-                                Log.e(TAG,"NoGPSDeviceFoundListener");
-                            }
-                        });*/
-            }
-        });
-        txtStartRandomEmpData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e(TAG,"onClick txtStartRandomEmpData");
-//                startAsyncForInsertEmpData();
-//                dbManager.insertRandomEmpData();
-            }
-        });
-        //        --------- NOT REQUIRED ----------
-        /*txtStartLocationData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(currentLocation!=null)
-                    dbManager.insertLocationData(currentLocation);
-            }
-        });*/
-        //        --------- NOT REQUIRED ----------
-        txtDeleteEmpData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                boolean isDelete = dbManager.deleteEmpData(dbManager.fetchLastEmpId());
-                Log.e(TAG, "DeleteEmpData: ");
-//                if(isDelete)
-//                    setRandomEmpCount();
-            }
-        });
-        txtDeleteLocData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                boolean isDelete = dbManager.deleteLocData(dbManager.fetchLastLocId());
-                Log.e(TAG, "DeleteLocData: ");
-//                if(isDelete)
-//                    setRandomLocCount();
-            }
-        });
         txtCountEmpData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -153,8 +102,6 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
         initLocationDataCount();
 
         initEmployeeDataCount(true);
-
-        startMyService();
 
         checkPermission();
     }
@@ -220,16 +167,19 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                 .ACCESS_COARSE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED)
+                PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission
+                        .ACCESS_BACKGROUND_LOCATION) !=
+                        PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission
                             .ACCESS_FINE_LOCATION, android.Manifest.permission
-                            .ACCESS_COARSE_LOCATION},
+                            .ACCESS_COARSE_LOCATION, Manifest.permission
+                            .ACCESS_BACKGROUND_LOCATION},
                     PERMISSION_FOR_LOCATION);
         }
         else
         {
-//            startMyService();
             requestLocationSettingsDialog();
         }
     }
@@ -255,13 +205,14 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
             //Do the stuff that requires permission...
             requestLocationSettingsDialog();
             locationHelper.startLocationUpdate();
-//            startMyService();
         } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest
                     .permission.ACCESS_COARSE_LOCATION) && ActivityCompat
                     .shouldShowRequestPermissionRationale(this, android.Manifest
-                            .permission.ACCESS_FINE_LOCATION)) {
+                            .permission.ACCESS_FINE_LOCATION) && ActivityCompat
+                    .shouldShowRequestPermissionRationale(this, Manifest
+                            .permission.ACCESS_BACKGROUND_LOCATION)) {
                 openPermissionDialog();
             } else {
                 closedPermissionDialog();
@@ -296,7 +247,8 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                         .Manifest
                         .permission
                         .ACCESS_FINE_LOCATION, android.Manifest.permission
-                        .ACCESS_COARSE_LOCATION}, PERMISSION_FOR_LOCATION);
+                        .ACCESS_COARSE_LOCATION, Manifest.permission
+                        .ACCESS_BACKGROUND_LOCATION}, PERMISSION_FOR_LOCATION);
                 closedPermissionDialog();
             }
 
@@ -314,7 +266,6 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
-//                        checkPermission();
                         Log.e(TAG, "RESULT_OK");
                         break;
                     case Activity.RESULT_CANCELED:
@@ -340,7 +291,6 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
 
     @Override
     public void onConnected(Bundle bundle) {
-//        setLocationCount();
 //        --------- NOT REQUIRED ----------
             locationHelper.getLastLocation(this, new OnSuccessListener<Location>() {
                 @Override
@@ -369,9 +319,9 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     public void onNetworkChange() {
         boolean isInternetAvail = Utils.isInternetConnected(this);
         String networkMessage = isInternetAvail ? "Internet Connected...":"Internet DisConnected...";
-//        Utils.showToast(this, networkMessage);
         Log.e(TAG, networkMessage);
-        requestLocationSettingsDialog();
+        if(AppLifecycleObserver.isAppVisible)
+            requestLocationSettingsDialog();
         startMyService();
     }
 
@@ -450,16 +400,40 @@ public class MainActivity extends AppCompatActivity implements LocationHelper.On
     }
 
     public void setEmployeeCount() {
-//        txtCountEmpData.setText("("+dbManager.fetchEmployeeCount()+")\nView\nRandom Data");
-//        int empId = dbManager.fetchLastEmpId();
-//        Log.e(TAG, "Last EmpId: "+empId);
         initEmployeeDataCount(false);
     }
 
     public void setLocationCount() {
-//        txtCountLocData.setText("("+dbManager.fetchLocationCount()+")\nView\nLocation Data");
-//        int locId = dbManager.fetchLastLocId();
-//        Log.e(TAG, "Last LocId: "+locId);
         initLocationDataCount();
     }
+
+    /*public void openNotificationSettings()
+    {
+        if(isNotificationVisible())
+        {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager.deleteNotificationChannel(TestContinuousService.CHANNEL_ID);
+                }
+            },650);
+            *//*PreferenceHelper.getInstance(this).setAskNotificationSettings(true);
+            Intent intentSettings = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName())
+                    .putExtra(Settings.EXTRA_CHANNEL_ID, TestContinuousService.CHANNEL_ID);
+            startActivity(intentSettings);*//*
+        }
+    }
+
+    private boolean isNotificationVisible() {
+        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        StatusBarNotification[] sbN =notificationManager.getActiveNotifications();
+        for(StatusBarNotification binNotifica : sbN)
+        {
+            if(binNotifica.getId() == TestContinuousService.FOREGROUND_NOTIFICATION_ID)
+            return true;
+        }
+        return false;
+    }*/
 }
